@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Impact of Digital Messaging on Language Use</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #070a13;
+            --slide-bg: #0b0f19;
+            --card-bg: rgba(23, 30, 48, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(59, 130, 246, 0.15);
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-teal: #06b6d4;
+            --accent-coral: #f43f5e;
+            --accent-emerald: #10b981;
+            
+            --primary-gradient: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            --teal-gradient: linear-gradient(135deg, #0891b2, #06b6d4);
+            --coral-gradient: linear-gradient(135deg, #e11d48, #f43f5e);
+            
+            --transition-speed: 0.6s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary-gradient);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            transition: width 0.3s ease;
+        }
+
+        /* Fullscreen Viewport */
+        .viewport {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: var(--slide-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Slide Styles */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+                        transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(0.98) translateY(10px);
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1) translateY(0);
+            z-index: 10;
+        }
+
+        .slide.past {
+            transform: scale(0.98) translateY(-10px);
+        }
+
+        /* Background Glows */
+        .glow {
+            position: absolute;
+            width: 40vw;
+            height: 40vw;
+            border-radius: 50%;
+            filter: blur(15vw);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+            transition: all 1s ease;
+        }
+
+        .glow-1 { top: -10%; left: -10%; background: var(--accent-purple); }
+        .glow-2 { bottom: -10%; right: -10%; background: var(--accent-blue); }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .slide-title {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        .slide-title::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 50px;
+            height: 4px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+        }
+
+        .presenter-badge {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+            padding: 8px 18px;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .slide-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            z-index: 10;
+            position: relative;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            padding-top: 15px;
+        }
+
+        .slide-footer-left {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+        }
+
+        /* Glassmorphic Cards */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 15px 35px -10px rgba(59, 130, 246, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: #ffffff;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .card-highlight {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        /* Lists */
+        ul {
+            list-style: none;
+        }
+
+        li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--accent-blue);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+            position: absolute;
+            left: 5px;
+            font-size: 1.3rem;
+        }
+
+        /* Title Slide Layout */
+        .title-slide-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .report-label {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .main-title {
+            font-size: 3.5rem;
+            line-height: 1.15;
+            margin: 15px 0;
+            color: #ffffff;
+        }
+
+        .report-subtitle {
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin-bottom: 25px;
+        }
+
+        .submit-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin: 25px 0;
+            width: 100%;
+            max-width: 900px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 25px 0;
+        }
+
+        .details-col {
+            text-align: left;
+        }
+
+        .details-col h4 {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .details-col p {
+            color: #ffffff;
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+
+        /* Table Design */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            padding: 16px 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+        }
+
+        td {
+            padding: 14px 20px;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tr:hover td {
+            color: #ffffff;
+            background: rgba(59, 130, 246, 0.02);
+        }
+
+        /* Large Centered Question Style */
+        .big-question-box {
+            text-align: center;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .big-question {
+            font-size: 2.8rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            line-height: 1.35;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 35px;
+            text-shadow: 0 0 50px rgba(59, 130, 246, 0.25);
+        }
+
+        /* Custom SVG Charts */
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            min-height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bar-chart-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .bar-sms {
+            fill: url(#cyan-gradient);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1) 0.2s;
+        }
+
+        .bar-essay {
+            fill: url(#coral-gradient);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1) 0.4s;
+        }
+
+        .active .bar-sms, .active .bar-essay {
+            transform: scaleY(1);
+        }
+
+        /* SVG Donut Chart */
+        .donut-chart-svg {
+            width: 280px;
+            height: 280px;
+        }
+
+        .donut-segment {
+            fill: none;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            stroke-dasharray: 283; /* 2 * pi * r (r=45) */
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.19, 1, 0.22, 1) 0.2s;
+        }
+
+        .donut-segment-1 { stroke: var(--accent-blue); }
+        .donut-segment-2 { stroke: var(--accent-purple); }
+        .donut-segment-3 { stroke: var(--accent-teal); }
+        .donut-segment-4 { stroke: var(--accent-coral); }
+        .donut-segment-5 { stroke: var(--accent-emerald); }
+
+        .active .donut-segment-1 { stroke-dashoffset: 23.6; } /* WhatsApp: 92% (dashoffset = 283 * (1 - 0.92)) */
+        .active .donut-segment-2 { stroke-dashoffset: 62.26; } /* Instagram: 78% */
+        .active .donut-segment-3 { stroke-dashoffset: 155.65; } /* Snapchat: 45% */
+        .active .donut-segment-4 { stroke-dashoffset: 198.1; } /* SMS: 30% */
+        .active .donut-segment-5 { stroke-dashoffset: 226.4; } /* Twitter: 20% */
+
+        /* Final Slide Questionnaire Styling */
+        .survey-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+            height: 100%;
+        }
+
+        .qr-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .qr-code {
+            width: 220px;
+            height: 220px;
+            padding: 12px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .survey-card {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .btn-link {
+            background: var(--primary-gradient);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 16px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        .btn-link:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Keyboard Info Toast */
+        .keyboard-hint {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            background: rgba(15, 20, 36, 0.95);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 100;
+            pointer-events: none;
+            animation: fadeOut 6s forwards;
+            backdrop-filter: blur(8px);
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .author-list-inline {
+            display: flex;
+            gap: 20px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .author-list-inline span {
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding-right: 20px;
+        }
+        .author-list-inline span:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        /* ==================== RESPONSIVE MEDIA QUERIES ==================== */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+            .viewport {
+                height: auto;
+                min-height: 100vh;
+            }
+            .slide {
+                padding: 40px 24px;
+                position: relative;
+                display: none;
+                min-height: 100vh;
+                justify-content: flex-start;
+                gap: 20px;
+            }
+            .slide.active {
+                display: flex;
+                position: relative;
+            }
+            .slide-title {
+                font-size: 1.8rem;
+            }
+            .presenter-badge {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+            .slide-content {
+                flex-grow: unset;
+                margin: 10px 0;
+            }
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .card {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            .card-title {
+                font-size: 1.15rem;
+                margin-bottom: 10px;
+            }
+            .card p {
+                font-size: 0.9rem;
+            }
+            li {
+                font-size: 0.9rem;
+            }
+            .title-slide-content .main-title {
+                font-size: 2.2rem;
+            }
+            .report-subtitle {
+                font-size: 1.15rem;
+            }
+            .submit-details {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 15px 0;
+                margin: 15px 0;
+            }
+            .details-col p {
+                font-size: 1rem;
+            }
+            .author-list-inline {
+                flex-direction: column;
+                gap: 5px;
+                font-size: 0.85rem;
+            }
+            .author-list-inline span {
+                border-right: none;
+                padding-right: 0;
+            }
+            .big-question {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+            .big-question-box p {
+                font-size: 0.95rem;
+            }
+            .chart-container {
+                flex-direction: column;
+                gap: 20px;
+                min-height: auto;
+            }
+            .donut-chart-svg {
+                width: 200px;
+                height: 200px;
+            }
+            .survey-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .qr-card {
+                gap: 10px;
+            }
+            .qr-code {
+                width: 160px;
+                height: 160px;
+            }
+            .survey-card h3 {
+                font-size: 1.6rem;
+            }
+            .btn-link {
+                font-size: 1rem;
+                padding: 12px 20px;
+            }
+            table {
+                font-size: 0.8rem;
+            }
+            th, td {
+                padding: 10px 12px;
+            }
+            .keyboard-hint {
+                display: none; /* Hide on mobile devices */
+            }
+            .slide-footer {
+                margin-top: 10px;
+                padding-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Viewport Container -->
+    <div class="viewport">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+
+        <!-- ==================== SLIDE 1 ==================== -->
+        <div class="slide active" id="slide-1" data-speaker="Muhammad Zaryab Attiq">
+            <div class="slide-header">
+                <span class="report-label">Expository Writing</span>
+                <span class="presenter-badge">Speaker: Muhammad Zaryab</span>
+            </div>
+            <div class="slide-content">
+                <div class="title-slide-content">
+                    <h1 class="main-title">The Impact of Digital Messaging<br>on Language Use</h1>
+                    <p class="report-subtitle">A Formal Research Report</p>
+                    
+                    <div class="submit-details">
+                        <div class="details-col">
+                            <h4>Submitted To</h4>
+                            <p>Miss Nabila</p>
+                            <p style="font-size: 0.95rem; color: var(--text-muted); margin-top: 4px;">Department of Intelligent Systems</p>
+                        </div>
+                        <div class="details-col">
+                            <h4>Class Group</h4>
+                            <p>Degree: Embedded Systems</p>
+                            <p style="font-size: 0.95rem; color: var(--text-muted); margin-top: 4px;">University of Lahore | May 29, 2026</p>
+                        </div>
+                    </div>
+                    
+                    <div class="author-list-inline">
+                        <span>Muhammad Zaryab Attiq (70176119)</span>
+                        <span>Muhammad Muneeb (70175747)</span>
+                        <span>Muhammad Haseeb (70175746)</span>
+                        <span>Hamza Naveed (70176526)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">University of Lahore</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 2 ==================== -->
+        <div class="slide" id="slide-2" data-speaker="Muhammad Zaryab Attiq">
+            <div class="slide-header">
+                <h2 class="slide-title">The Core Focus</h2>
+                <span class="presenter-badge">Speaker: Muhammad Zaryab</span>
+            </div>
+            <div class="slide-content">
+                <div class="big-question-box">
+                    <p style="color: var(--accent-blue); font-family: 'Outfit', sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 15px;">The Big Question We Researched</p>
+                    <h3 class="big-question">"Does spending so much time texting, tweeting, and messaging actually change the way we write and harm formal communication?"</h3>
+                    <p style="max-width: 900px; color: var(--text-muted); font-size: 1.1rem; line-height: 1.65;">
+                        As engineering and technology students, messaging is our dominant mode of writing. Educators and employers worry that digital shorthand ruins grammar and spelling. We set out to find the facts.
+                    </p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Introduction &amp; Background</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 3 ==================== -->
+        <div class="slide" id="slide-3" data-speaker="Muhammad Zaryab Attiq">
+            <div class="slide-header">
+                <h2 class="slide-title">The Answer</h2>
+                <span class="presenter-badge">Speaker: Muhammad Zaryab</span>
+            </div>
+            <div class="slide-content">
+                <div class="grid-3" style="margin-top: 10px;">
+                    <div class="card">
+                        <div class="card-title">
+                            <span style="color: var(--accent-blue); font-weight: bold;">01.</span>
+                            Style Switching
+                        </div>
+                        <p>Most students naturally switch their writing style depending on the situation. They use casual typing with friends, but use proper English in essays (less than <span class="card-highlight">3%</span> slang in academic work).</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">
+                            <span style="color: var(--accent-purple); font-weight: bold;">02.</span>
+                            Reading &amp; Writing Practice
+                        </div>
+                        <p>We write more today than any generation in history. Constant daily texting gives us non-stop reading and writing practice. This positive cycle actually helps improve our <span class="card-highlight">reading speed</span> and <span class="card-highlight">vocabulary</span>.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">
+                            <span style="color: var(--accent-coral); font-weight: bold;">03.</span>
+                            Style Awareness
+                        </div>
+                        <p>The threat is not the technology, but the lack of style awareness. Students who are explicitly taught when and where to use different writing styles easily toggle between messaging and formal English.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Executive Summary</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 4 ==================== -->
+        <div class="slide" id="slide-4" data-speaker="Muhammad Zaryab Attiq">
+            <div class="slide-header">
+                <h2 class="slide-title">Methodology &amp; Data</h2>
+                <span class="presenter-badge">Speaker: Muhammad Zaryab</span>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card" style="display: flex; flex-direction: column; justify-content: center; gap: 15px;">
+                        <h4 style="color: #ffffff; font-size: 1.25rem; margin-bottom: 5px;">Data Collection Strategy</h4>
+                        <ul>
+                            <li><strong>Secondary Data</strong>: Review of peer-reviewed linguistic research published between 2000 and 2026.</li>
+                            <li><strong>Primary Survey</strong>: Distributed a Google Forms questionnaire to University of Lahore students and peer groups.</li>
+                            <li><strong>Sample Size</strong>: Collected responses from a target sample of <strong>50 respondents</strong>.</li>
+                            <li><strong>Focus</strong>: Top platforms used, how often shortcuts are typed, and students' own views on their writing.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <h4 style="color: #ffffff; font-size: 1.2rem; margin-bottom: 15px; text-align: center;">Platform Preferences</h4>
+                        <div class="chart-container">
+                            <!-- SVG Donut Chart -->
+                            <svg class="donut-chart-svg" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="45" style="fill:none; stroke:rgba(255,255,255,0.03); stroke-width:8;"></circle>
+                                
+                                <!-- WhatsApp Segment 92% -->
+                                <circle class="donut-segment donut-segment-1" cx="60" cy="60" r="45" stroke-width="8"></circle>
+                                <!-- Instagram Segment 78% -->
+                                <circle class="donut-segment donut-segment-2" cx="60" cy="60" r="45" stroke-dasharray="283" stroke-width="6" style="transform: rotate(30deg);"></circle>
+                                <!-- Snapchat Segment 45% -->
+                                <circle class="donut-segment donut-segment-3" cx="60" cy="60" r="45" stroke-dasharray="283" stroke-width="5" style="transform: rotate(110deg);"></circle>
+                                <!-- SMS Segment 30% -->
+                                <circle class="donut-segment donut-segment-4" cx="60" cy="60" r="45" stroke-dasharray="283" stroke-width="4" style="transform: rotate(200deg);"></circle>
+                                <!-- Twitter Segment 20% -->
+                                <circle class="donut-segment donut-segment-5" cx="60" cy="60" r="45" stroke-dasharray="283" stroke-width="3" style="transform: rotate(280deg);"></circle>
+                            </svg>
+                            
+                            <!-- Legend -->
+                            <div style="margin-left: 25px; display: flex; flex-direction: column; gap: 10px;">
+                                <div style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted);">
+                                    <span style="width:10px; height:10px; border-radius:50%; background:var(--accent-blue);"></span> WhatsApp: 92%
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted);">
+                                    <span style="width:10px; height:10px; border-radius:50%; background:var(--accent-purple);"></span> Instagram: 78%
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted);">
+                                    <span style="width:10px; height:10px; border-radius:50%; background:var(--accent-teal);"></span> Snapchat: 45%
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted);">
+                                    <span style="width:10px; height:10px; border-radius:50%; background:var(--accent-coral);"></span> SMS: 30%
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted);">
+                                    <span style="width:10px; height:10px; border-radius:50%; background:var(--accent-emerald);"></span> Twitter/X: 20%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Report Methodology</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 5 ==================== -->
+        <div class="slide" id="slide-5" data-speaker="Muhammad Muneeb">
+            <div class="slide-header">
+                <h2 class="slide-title">Platform Comparison</h2>
+                <span class="presenter-badge">Speaker: Muhammad Muneeb</span>
+            </div>
+            <div class="slide-content">
+                <div class="card" style="padding: 15px; overflow: hidden; margin-top: 10px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Platform</th>
+                                <th>Character Limit</th>
+                                <th>Primary Age</th>
+                                <th>Formality Level</th>
+                                <th>Emoji Support</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="color:#ffffff; font-weight:600;">SMS</td>
+                                <td>160 chars</td>
+                                <td>All ages</td>
+                                <td>Informal</td>
+                                <td>Limited</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#ffffff; font-weight:600;">WhatsApp</td>
+                                <td>65,536 chars</td>
+                                <td>18 - 45</td>
+                                <td>Informal - Semi</td>
+                                <td>Full</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#ffffff; font-weight:600;">Twitter / X</td>
+                                <td>280 chars</td>
+                                <td>18 - 34</td>
+                                <td>Informal - Formal</td>
+                                <td>Full</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#ffffff; font-weight:600;">Email</td>
+                                <td>Unlimited</td>
+                                <td>All ages</td>
+                                <td>Semi - Formal</td>
+                                <td>Limited</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#ffffff; font-weight:600;">Instagram DM</td>
+                                <td>Unlimited</td>
+                                <td>15 - 30</td>
+                                <td>Informal</td>
+                                <td>Full</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-top: 12px; font-style:italic; text-align:center;">
+                    Source: Adapted from Table 1 of the research report (Platform Characteristics).
+                </p>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Overview of Platforms</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 6 ==================== -->
+        <div class="slide" id="slide-6" data-speaker="Muhammad Muneeb">
+            <div class="slide-header">
+                <h2 class="slide-title">Linguistic Features of Netspeak</h2>
+                <span class="presenter-badge">Speaker: Muhammad Muneeb</span>
+            </div>
+            <div class="slide-content">
+                <div class="grid-3" style="margin-top: 10px;">
+                    <div class="card">
+                        <h4 style="color:var(--accent-blue); font-size:1.25rem; margin-bottom:10px;">1. Shorthand &amp; Clipping</h4>
+                        <p style="font-size:0.95rem;">To maximize speed, users use acronyms and clippings:</p>
+                        <ul style="margin-top:10px;">
+                            <li style="font-size:0.9rem;">Letter Homophones: "u", "r", "c"</li>
+                            <li style="font-size:0.9rem;">Number Homophones: "2", "4", "gr8"</li>
+                            <li style="font-size:0.9rem;">Initialisms: "lol", "brb", "tbh", "omg"</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h4 style="color:var(--accent-purple); font-size:1.25rem; margin-bottom:10px;">2. Playful Spelling</h4>
+                        <p style="font-size:0.95rem;">Spelling choices reflect social connections, not mistakes:</p>
+                        <ul style="margin-top:10px;">
+                            <li style="font-size:0.9rem;">Phonetic Shift: "kewl", "nite", "wuz"</li>
+                            <li style="font-size:0.9rem;">Letter Repetition: "noooooo", "yessss"</li>
+                            <li style="font-size:0.9rem;">Playful Grammar: Memes ("much wow", "very amaze")</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <h4 style="color:var(--accent-coral); font-size:1.25rem; margin-bottom:10px;">3. Pragmatic Punctuation</h4>
+                        <p style="font-size:0.95rem;">Punctuation marks are repurposed to convey emotion and attitude:</p>
+                        <ul style="margin-top:10px;">
+                            <li style="font-size:0.9rem;">Full Stop (.): Reads as cold, angry, or passive-aggressive.</li>
+                            <li style="font-size:0.9rem;">Capitalization: "i" denotes casual register; ALL CAPS represents shouting.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Effects on Spelling &amp; Grammar</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 7 ==================== -->
+        <div class="slide" id="slide-7" data-speaker="Muhammad Haseeb">
+            <div class="slide-header">
+                <h2 class="slide-title">Frequencies: SMS vs. Essays</h2>
+                <span class="presenter-badge">Speaker: Muhammad Haseeb</span>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card" style="display: flex; flex-direction: column; justify-content: center; gap: 15px;">
+                        <h4 style="color: #ffffff; font-size: 1.25rem; margin-bottom: 5px;">Keeping Styles Separate</h4>
+                        <p style="font-size: 1rem;">
+                            This chart compares the use of abbreviations and shortcuts in students' casual messages versus their formal essays.
+                        </p>
+                        <p style="font-size: 0.95rem; color: var(--text-muted);">
+                            The huge drop in essays shows that students are very good at keeping shortcuts out of their class assignments.
+                        </p>
+                        <div style="display: flex; gap: 20px; font-size: 0.85rem; margin-top: 10px;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:12px; height:12px; background:var(--accent-teal); border-radius:2px;"></span> SMS Frequency (%)
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:12px; height:12px; background:var(--accent-coral); border-radius:2px;"></span> Essay Frequency (%)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="padding: 15px;">
+                        <div class="chart-container">
+                            <svg class="bar-chart-svg" viewBox="0 0 320 200">
+                                <defs>
+                                    <linearGradient id="cyan-gradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#06b6d4"></stop>
+                                        <stop offset="100%" stop-color="#0891b2"></stop>
+                                    </linearGradient>
+                                    <linearGradient id="coral-gradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#f43f5e"></stop>
+                                        <stop offset="100%" stop-color="#e11d48"></stop>
+                                    </linearGradient>
+                                </defs>
+                                
+                                <!-- Y Axis Lines -->
+                                <line x1="30" y1="20" x2="310" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"></line>
+                                <line x1="30" y1="60" x2="310" y2="60" stroke="rgba(255,255,255,0.05)" stroke-width="1"></line>
+                                <line x1="30" y1="100" x2="310" y2="100" stroke="rgba(255,255,255,0.05)" stroke-width="1"></line>
+                                <line x1="30" y1="140" x2="310" y2="140" stroke="rgba(255,255,255,0.05)" stroke-width="1"></line>
+                                <line x1="30" y1="170" x2="310" y2="170" stroke="rgba(255,255,255,0.1)" stroke-width="1"></line>
+                                
+                                <!-- Y Axis Labels -->
+                                <text x="22" y="24" text-anchor="end" style="fill:var(--text-muted); font-size:8px;">15%</text>
+                                <text x="22" y="64" text-anchor="end" style="fill:var(--text-muted); font-size:8px;">10%</text>
+                                <text x="22" y="104" text-anchor="end" style="fill:var(--text-muted); font-size:8px;">5%</text>
+                                <text x="22" y="174" text-anchor="end" style="fill:var(--text-muted); font-size:8px;">0%</text>
+                                
+                                <!-- X Axis Labels -->
+                                <text x="60" y="185" text-anchor="middle" style="fill:var(--text-muted); font-size:8px;">Homophones</text>
+                                <text x="120" y="185" text-anchor="middle" style="fill:var(--text-muted); font-size:8px;">Numbers</text>
+                                <text x="180" y="185" text-anchor="middle" style="fill:var(--text-muted); font-size:8px;">Initialisms</text>
+                                <text x="240" y="185" text-anchor="middle" style="fill:var(--text-muted); font-size:8px;">Clippings</text>
+                                <text x="295" y="185" text-anchor="middle" style="fill:var(--text-muted); font-size:8px;">Emoji</text>
+                                
+                                <!-- Data Bars (Height scales: 1% = 10 units of height, Y base is 170) -->
+                                <!-- 1. Letter Homophones: SMS 8.4% (84h, y=86) vs Essay 1.2% (12h, y=158) -->
+                                <rect class="bar-sms" x="48" y="86" width="10" height="84" rx="2"></rect>
+                                <rect class="bar-essay" x="62" y="158" width="10" height="12" rx="2"></rect>
+                                
+                                <!-- 2. Number Homophones: SMS 5.1% (51h, y=119) vs Essay 0.3% (3h, y=167) -->
+                                <rect class="bar-sms" x="108" y="119" width="10" height="51" rx="2"></rect>
+                                <rect class="bar-essay" x="122" y="167" width="10" height="3" rx="2"></rect>
+                                
+                                <!-- 3. Initialisms: SMS 11.2% (112h, y=58) vs Essay 0.8% (8h, y=162) -->
+                                <rect class="bar-sms" x="168" y="58" width="10" height="112" rx="2"></rect>
+                                <rect class="bar-essay" x="182" y="162" width="10" height="8" rx="2"></rect>
+                                
+                                <!-- 4. Clippings: SMS 6.7% (67h, y=103) vs Essay 2.1% (21h, y=149) -->
+                                <rect class="bar-sms" x="228" y="103" width="10" height="67" rx="2"></rect>
+                                <rect class="bar-essay" x="242" y="149" width="10" height="21" rx="2"></rect>
+                                
+                                <!-- 5. Emoji: SMS 14.3% (143h, y=27) vs Essay 0.1% (1h, y=169) -->
+                                <rect class="bar-sms" x="283" y="27" width="10" height="143" rx="2"></rect>
+                                <rect class="bar-essay" x="297" y="169" width="10" height="1" rx="2"></rect>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Frequencies in Student Writing Samples</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 8 ==================== -->
+        <div class="slide" id="slide-8" data-speaker="Muhammad Haseeb">
+            <div class="slide-header">
+                <h2 class="slide-title">Emoji &amp; Changing Styles</h2>
+                <span class="presenter-badge">Speaker: Muhammad Haseeb</span>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-blue);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                            Emoji as Expression Tools
+                        </div>
+                        <p style="margin-bottom: 12px;">Emoji function like body language on screen, helping to show feelings and attitude in text:</p>
+                        <ul>
+                            <li><strong>Changing Tone</strong>: Softening instructions or texts (e.g. adding 🙂 signals warmth).</li>
+                            <li><strong>Direct Meaning</strong>: Replacing words directly (e.g. 🍕 to express hunger).</li>
+                            <li><strong>New Emoji Rules</strong>: Skull (💀) for laughter, raised hands (🙌) for celebration.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-purple);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M17 2.1l4 4-4 4"></path><path d="M3 12.2v-2a4 4 0 0 1 4-4h14"></path><path d="M7 21.9l-4-4 4-4"></path><path d="M21 11.8v2a4 4 0 0 1-4 4H3"></path></svg>
+                            Style Switching (Code-Switching)
+                        </div>
+                        <p style="margin-bottom: 12px;"><strong>Code-switching</strong> means easily changing your language and tone to match who you are talking to:</p>
+                        <ul>
+                            <li>Students switch styles naturally, just like speaking Urdu at home and English in class.</li>
+                            <li>Studies found college students with high texting shortcut use made <strong>no more errors</strong> in formal essays than non-users.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">New Vocabulary &amp; Conventions</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 9 ==================== -->
+        <div class="slide" id="slide-9" data-speaker="Hamza Naveed">
+            <div class="slide-header">
+                <h2 class="slide-title">Competence Impact</h2>
+                <span class="presenter-badge">Speaker: Hamza Naveed</span>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card" style="display: flex; flex-direction: column; justify-content: center; gap: 15px;">
+                        <h4 style="color: var(--accent-blue); font-size: 1.25rem;">Academic Capability</h4>
+                        <p>
+                            Rigorous tracking studies find no negative correlation between messaging and academic essay grades.
+                        </p>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">
+                            Messaging increases the raw volume of written communication, which actually supports reading skills.
+                        </p>
+                    </div>
+                    
+                    <div class="card" style="display: flex; flex-direction: column; justify-content: center; gap: 15px;">
+                        <h4 style="color: var(--accent-coral); font-size: 1.25rem;">Professional Standards</h4>
+                        <p>
+                            Employer surveys show that formal written communication remains a major gap for fresh graduates.
+                        </p>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">
+                            Corporate platforms like <strong>Slack and MS Teams</strong> encourage rapid conversational exchanges, blurring the line between casual chat and formal work writing.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Impact on Formal Writing</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 10 ==================== -->
+        <div class="slide" id="slide-10" data-speaker="Hamza Naveed">
+            <div class="slide-header">
+                <h2 class="slide-title">Demographic Variations</h2>
+                <span class="presenter-badge">Speaker: Hamza Naveed</span>
+            </div>
+            <div class="slide-content">
+                <div class="grid-3" style="margin-top: 10px;">
+                    <div class="card">
+                        <h4 style="color:#ffffff; font-size:1.2rem; margin-bottom:10px;">Generational Divide</h4>
+                        <p style="font-size:0.95rem; line-height:1.5;">
+                            <strong>Digital Natives</strong> see textese as natural, but <strong>Digital Immigrants</strong> (teachers, parents) view it as a degradation of language standards.
+                        </p>
+                    </div>
+                    
+                    <div class="card">
+                        <h4 style="color:#ffffff; font-size:1.2rem; margin-bottom:10px;">Practice Gaps</h4>
+                        <p style="font-size:0.95rem; line-height:1.5;">
+                            Students from under-resourced schools are more likely to let textisms leak into assignments due to less practice with formal writing.
+                        </p>
+                    </div>
+                    
+                    <div class="card">
+                        <h4 style="color:#ffffff; font-size:1.2rem; margin-bottom:10px;">Mixing Languages</h4>
+                        <p style="font-size:0.95rem; line-height:1.5;">
+                            In Pakistan (e.g. Lahore), messaging involves heavy code-mixing of English, Urdu, and Roman Urdu. This represents linguistic agility.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Demographic &amp; Cultural Variations</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 11 ==================== -->
+        <div class="slide" id="slide-11" data-speaker="Hamza Naveed">
+            <div class="slide-header">
+                <h2 class="slide-title">Conclusions &amp; Recommendations</h2>
+                <span class="presenter-badge">Speaker: Hamza Naveed</span>
+            </div>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="card" style="border-left: 4px solid var(--accent-blue);">
+                        <h4 style="color:#ffffff; font-size:1.25rem; margin-bottom:10px;">Key Conclusions</h4>
+                        <ul>
+                            <li style="font-size:0.9rem; margin-bottom:8px;">Netspeak is a structured informal style, not a corruption of English.</li>
+                            <li style="font-size:0.9rem; margin-bottom:8px;">Most users successfully navigate switching styles between formats.</li>
+                            <li style="font-size:0.9rem; margin-bottom:8px;">The primary risk is a lack of style instruction for vulnerable student cohorts.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card" style="border-left: 4px solid var(--accent-purple);">
+                        <h4 style="color:#ffffff; font-size:1.25rem; margin-bottom:10px;">Recommendations</h4>
+                        <ul>
+                            <li style="font-size:0.9rem; margin-bottom:8px;"><strong>Schools</strong>: Teach style awareness explicitly (contrast messaging styles with academic expectations).</li>
+                            <li style="font-size:0.9rem; margin-bottom:8px;"><strong>Workplaces</strong>: Establish clear guidelines (e.g., Slack is informal, external emails are strictly formal).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Conclusions &amp; Recommendations</span>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 12 ==================== -->
+        <div class="slide" id="slide-12" data-speaker="Hamza Naveed">
+            <div class="slide-header">
+                <h2 class="slide-title">Thank You / Q&amp;A</h2>
+                <span class="presenter-badge">Speaker: Hamza Naveed</span>
+            </div>
+            <div class="slide-content">
+                <div class="survey-grid">
+                    <div class="qr-card">
+                        <h4 style="color: #ffffff; font-size: 1.3rem;">Scan Our Questionnaire</h4>
+                        <div class="qr-code">
+                            <img src="data:image/png;base64,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" alt="Survey QR Code">
+                        </div>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 280px;">
+                            Scan with your smartphone camera to access our live Google Forms survey questionnaire.
+                        </p>
+                    </div>
+                    
+                    <div class="survey-card">
+                        <h3 style="font-size: 2rem; line-height: 1.2; color: #ffffff;">Any Questions?</h3>
+                        <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6;">
+                            Thank you for your time. You can view or fill out our research questionnaire by clicking the button below:
+                        </p>
+                        <a href="https://forms.gle/S5X3HyYKHNUmdV3i6" target="_blank" class="btn-link">
+                            Open Survey Questionnaire Link
+                        </a>
+                        
+                        <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:15px; margin-top:5px;">
+                            <p style="font-size:0.95rem; color:var(--text-muted); font-family:'Outfit'; font-weight:600;">
+                                PRESENTERS:
+                            </p>
+                            <p style="font-size:1rem; color:var(--text-primary); margin-top:4px;">
+                                Muhammad Zaryab • Muhammad Muneeb • Muhammad Haseeb • Hamza Naveed
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="slide-footer-left">Expository Writing Presentation</span>
+            </div>
+        </div>
+
+        <!-- Keyboard Hint -->
+        <div class="keyboard-hint">
+            Tip: Navigate using Arrow Keys, Spacebar, or swipe left/right.
+        </div>
+    </div>
+
+    <!-- JavaScript Navigation -->
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+
+        // Update presentation state
+        function updatePresentation() {
+            slides.forEach((slide, index) => {
+                slide.className = 'slide';
+                if (index === currentSlideIndex) {
+                    slide.classList.add('active');
+                } else if (index < currentSlideIndex) {
+                    slide.classList.add('past');
+                }
+            });
+
+            // Update Progress Bar
+            const progress = ((currentSlideIndex + 1) / slides.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Slide navigation controls
+        function nextSlide() {
+            if (currentSlideIndex < slides.length - 1) {
+                currentSlideIndex++;
+                updatePresentation();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                updatePresentation();
+            }
+        }
+
+        // Keyboard Controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                prevSlide();
+            }
+        });
+
+        // Touch swipe controls
+        let touchstartX = 0;
+        let touchendX = 0;
+        const slider = document.querySelector('.viewport');
+
+        slider.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        });
+
+        slider.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchstartX - touchendX > 50) {
+                nextSlide(); // Swiped Left
+            }
+            if (touchendX - touchstartX > 50) {
+                prevSlide(); // Swiped Right
+            }
+        }
+
+        // Initialize presentation
+        updatePresentation();
+    </script>
+</body>
+</html>
